@@ -43,6 +43,25 @@ public class AirQualityService {
     }
 
     /**
+     * Fetches latest air quality, saves to DB, replies to a specific LINE user,
+     * and returns the result as a DTO.
+     */
+    public AirQualityDto fetchAndReply(String replyToken) {
+        // 1. Fetch from IQAir and save to DB
+        AirQualityRecord record = iqAirService.fetchAndSave();
+
+        // 2. Reply to the specific user via LINE
+        lineMessagingService.replyNotification(replyToken, record);
+
+        // 3. Mark record as notified and update in DB
+        record.setNotifiedLine(true);
+        repository.save(record);
+
+        // 4. Return clean DTO to caller
+        return new AirQualityDto(record);
+    }
+
+    /**
      * Fetches latest air quality and saves to DB — does NOT send LINE notification.
      * Use this to test IQAir integration without LINE.
      */

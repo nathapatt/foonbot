@@ -21,6 +21,9 @@ public class LineMessagingService {
     @Value("${line.messaging.broadcast-url}")
     private String broadcastUrl;
 
+    @Value("${line.messaging.reply-url}")
+    private String replyUrl;
+
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
 
@@ -48,6 +51,31 @@ public class LineMessagingService {
 
         if (!response.getStatusCode().is2xxSuccessful()) {
             throw new RuntimeException("LINE Messaging API failed: "
+                    + response.getStatusCode() + " — " + response.getBody());
+        }
+    }
+
+    /**
+     * Replies with a Flex Message air quality card to a specific user via replyToken.
+     */
+    public void replyNotification(String replyToken, AirQualityRecord record) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(Objects.requireNonNull(channelToken, "LINE channel token must be set"));
+
+        Map<String, Object> flexMessage = buildFlexMessage(record);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("replyToken", replyToken);
+        body.put("messages", List.of(flexMessage));
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+        String url = Objects.requireNonNull(replyUrl, "LINE reply URL must be set");
+
+        ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("LINE Reply API failed: "
                     + response.getStatusCode() + " — " + response.getBody());
         }
     }
