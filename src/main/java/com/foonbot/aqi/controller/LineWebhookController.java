@@ -1,11 +1,15 @@
 package com.foonbot.aqi.controller;
 
-import com.foonbot.aqi.service.AirQualityService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.foonbot.aqi.service.AirQualityService;
 
 @RestController
 @RequestMapping("/api/line")
@@ -41,7 +45,7 @@ public class LineWebhookController {
                     // Action 1: "Check AQI"
                     // Instantly fetch real-time data and reply with Flex Message
                     // ─────────────────────────────────────────────────────────────
-                    if ("Check AQI".equalsIgnoreCase(text)) {
+                    if ("Check Air Quality".equalsIgnoreCase(text)) {
                         try {
                             airQualityService.fetchAndReply(replyToken);
                         } catch (Exception e) {
