@@ -71,4 +71,44 @@ public class IQAirService {
 
         return repository.save(record);
     }
+
+    /**
+     * Fetches air quality from IQAir using GPS coordinates (nearest city lookup).
+     * Used when the user shares location via LIFF.
+     */
+    public AirQualityRecord fetchAndSaveByLocation(double lat, double lon) {
+        java.net.URI uri = UriComponentsBuilder.newInstance()
+                .scheme("https")
+                .host("api.airvisual.com")
+                .path("/v2/nearest_city")
+                .queryParam("lat", lat)
+                .queryParam("lon", lon)
+                .queryParam("key", apiKey)
+                .build()
+                .encode()
+                .toUri();
+
+        IQAirResponse response = restTemplate.getForObject(uri, IQAirResponse.class);
+
+        if (response == null || !"success".equals(response.getStatus())) {
+            throw new RuntimeException("IQAir API returned an error: " +
+                    (response != null ? response.getStatus() : "null response"));
+        }
+
+        IQAirResponse.Data data = response.getData();
+        IQAirResponse.Pollution pollution = data.getCurrent().getPollution();
+        IQAirResponse.Weather weather = data.getCurrent().getWeather();
+
+        AirQualityRecord record = new AirQualityRecord(
+                data.getCity(),
+                data.getState(),
+                data.getCountry(),
+                pollution.getAqiUs(),
+                pollution.getMainPollutant(),
+                weather.getTemperature(),
+                weather.getHumidity()
+        );
+
+        return repository.save(record);
+    }
 }

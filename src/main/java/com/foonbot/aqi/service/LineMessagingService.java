@@ -24,6 +24,9 @@ public class LineMessagingService {
     @Value("${line.messaging.reply-url}")
     private String replyUrl;
 
+    @Value("${line.messaging.push-url}")
+    private String pushUrl;
+
     private static final DateTimeFormatter FORMATTER =
             DateTimeFormatter.ofPattern("dd MMM yyyy, HH:mm");
 
@@ -76,6 +79,32 @@ public class LineMessagingService {
 
         if (!response.getStatusCode().is2xxSuccessful()) {
             throw new RuntimeException("LINE Reply API failed: "
+                    + response.getStatusCode() + " — " + response.getBody());
+        }
+    }
+
+    /**
+     * Pushes a Flex Message air quality card to a specific LINE user by userId.
+     * Used by LIFF flow where there is no replyToken.
+     */
+    public void pushNotification(String userId, AirQualityRecord record) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(Objects.requireNonNull(channelToken, "LINE channel token must be set"));
+
+        Map<String, Object> flexMessage = buildFlexMessage(record);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("to", userId);
+        body.put("messages", List.of(flexMessage));
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+        String url = Objects.requireNonNull(pushUrl, "LINE push URL must be set");
+
+        ResponseEntity<String> response = restTemplate.postForEntity(url, request, String.class);
+
+        if (!response.getStatusCode().is2xxSuccessful()) {
+            throw new RuntimeException("LINE Push API failed: "
                     + response.getStatusCode() + " — " + response.getBody());
         }
     }

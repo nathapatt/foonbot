@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FoonBot – Check Air Quality</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #fff;
+    }
+
+    .card {
+      text-align: center;
+      padding: 40px 28px;
+      max-width: 340px;
+      width: 92%;
+    }
+
+    /* ── Icon ── */
+    .icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 36px;
+      transition: all 0.4s ease;
+    }
+    .icon.pulse { animation: pulse 2s ease-in-out infinite; }
+    .icon.error-icon { background: rgba(255,80,80,0.15); border-color: rgba(255,80,80,0.4); animation: none; }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(100,200,255,0.4); }
+      50%       { transform: scale(1.05); box-shadow: 0 0 0 16px rgba(100,200,255,0); }
+    }
+
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
+
+    p  { font-size: 14px; color: rgba(255,255,255,0.6); line-height: 1.6; }
+
+    /* ── Status line ── */
+    .status {
+      margin-top: 24px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      min-height: 20px;
+      transition: all 0.3s ease;
+    }
+    .status.success { color: #34C759; }
+
+    /* ── Spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Permission-denied panel ── */
+    #denied-panel { display: none; margin-top: 24px; text-align: left; }
+
+    .denied-title {
+      color: #FF6B6B;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .steps {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      padding: 16px 18px;
+    }
+
+    .steps p {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 10px;
+    }
+
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.85);
+      line-height: 1.5;
+    }
+    .step:last-child { margin-bottom: 0; }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      margin-top: 1px;
+    }
+
+    .retry-btn {
+      display: block;
+      width: 100%;
+      margin-top: 18px;
+      padding: 13px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .retry-btn:active { opacity: 0.8; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon pulse" id="icon">🌿</div>
+    <h1 id="title">Checking Air Quality</h1>
+    <p id="subtitle">Getting your location to find the nearest air quality data…</p>
+    <div class="status" id="status">
+      <span class="spinner"></span> Initializing…
+    </div>
+
+    <!-- Shown only when permission is denied -->
+    <div id="denied-panel">
+      <div class="denied-title">📍 Location Access Required</div>
+      <div class="steps">
+        <p>You previously denied location access. To re-enable it:</p>
+
+        <!-- iOS steps -->
+        <div id="ios-steps">
+          <div class="step"><div class="step-num">1</div><span>Open <strong>Settings</strong> on your iPhone</span></div>
+          <div class="step"><div class="step-num">2</div><span>Scroll down and tap <strong>LINE</strong></span></div>
+          <div class="step"><div class="step-num">3</div><span>Tap <strong>Location</strong> → select <strong>"While Using"</strong></span></div>
+          <div class="step"><div class="step-num">4</div><span>Come back to LINE and tap <strong>Check Air Quality</strong> again</span></div>
+        </div>
+
+        <!-- Android steps -->
+        <div id="android-steps" style="display:none">
+          <div class="step"><div class="step-num">1</div><span>Open <strong>Settings</strong> on your phone</span></div>
+          <div class="step"><div class="step-num">2</div><span>Go to <strong>Apps → LINE → Permissions</strong></span></div>
+          <div class="step"><div class="step-num">3</div><span>Tap <strong>Location</strong> → select <strong>"Allow only while using"</strong></span></div>
+          <div class="step"><div class="step-num">4</div><span>Come back to LINE and tap <strong>Check Air Quality</strong> again</span></div>
+        </div>
+      </div>
+      <button class="retry-btn" onclick="liff.closeWindow()">Close &amp; Try Again</button>
+    </div>
+  </div>
+
+  <script>
+    const LIFF_ID    = '2009767326-TJGFyp79';
+    const API_ORIGIN = window.location.origin;
+
+    const iconEl    = document.getElementById('icon');
+    const titleEl   = document.getElementById('title');
+    const subtitleEl= document.getElementById('subtitle');
+    const statusEl  = document.getElementById('status');
+    const deniedEl  = document.getElementById('denied-panel');
+
+    function setStatus(msg, type = '') {
+      statusEl.className = 'status ' + type;
+      statusEl.innerHTML = (type === '' ? '<span class="spinner"></span> ' : '') + msg;
+    }
+
+    function showDenied() {
+      // Detect OS and show right steps
+      const isAndroid = /android/i.test(navigator.userAgent);
+      document.getElementById('ios-steps').style.display     = isAndroid ? 'none' : 'block';
+      document.getElementById('android-steps').style.display = isAndroid ? 'block' : 'none';
+
+      iconEl.textContent = '🚫';
+      iconEl.classList.remove('pulse');
+      iconEl.classList.add('error-icon');
+      titleEl.textContent    = 'Location Denied';
+      subtitleEl.textContent = 'This feature needs your location to find nearby air quality data.';
+      statusEl.style.display = 'none';
+      deniedEl.style.display = 'block';
+    }
+
+    async function run() {
+      setStatus('Initializing LINE…');
+      await liff.init({ liffId: LIFF_ID });
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+
+      setStatus('Getting profile…');
+      const profile = await liff.getProfile();
+      const userId  = profile.userId;
+
+      setStatus('Getting your location…');
+      const position = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 10000
+        });
+      });
+
+      const lat = position.coords.latitude;
+      const lon = position.coords.longitude;
+
+      setStatus('Fetching air quality data…');
+      const res = await fetch(`${API_ORIGIN}/api/air-quality/by-location`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, lat, lon })
+      });
+
+      if (!res.ok) throw new Error('Server error: ' + res.status);
+
+      setStatus('Done! Check your LINE chat 🎉', 'success');
+      setTimeout(() => liff.closeWindow(), 1500);
+    }
+
+    run().catch(err => {
+      console.error(err);
+      if (err.code === 1) {
+        // PERMISSION_DENIED
+        showDenied();
+      } else {
+        setStatus('Something went wrong: ' + err.message, 'error');
+      }
+    });
+  </script>
+</body>
+</html>

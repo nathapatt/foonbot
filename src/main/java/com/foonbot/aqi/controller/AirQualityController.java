@@ -4,10 +4,13 @@ import com.foonbot.aqi.dtos.AirQualityDto;
 import com.foonbot.aqi.service.AirQualityService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/air-quality")
@@ -57,6 +60,26 @@ public class AirQualityController {
     @GetMapping("/history")
     public ResponseEntity<List<AirQualityDto>> history() {
         List<AirQualityDto> result = airQualityService.getHistory();
+        return ResponseEntity.ok(result);
+    }
+
+    /**
+     * Called by the LIFF page with the user's GPS location.
+     * Fetches nearest city AQI and pushes a Flex Message to the LINE user.
+     * POST /api/air-quality/by-location
+     * Body: { "userId": "...", "lat": 13.75, "lon": 100.50 }
+     */
+    @PostMapping("/by-location")
+    public ResponseEntity<AirQualityDto> byLocation(@RequestBody Map<String, Object> body) {
+        String userId = (String) body.get("userId");
+        double lat    = ((Number) body.get("lat")).doubleValue();
+        double lon    = ((Number) body.get("lon")).doubleValue();
+
+        if (userId == null || userId.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        AirQualityDto result = airQualityService.fetchAndPushByLocation(userId, lat, lon);
         return ResponseEntity.ok(result);
     }
 }

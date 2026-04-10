@@ -62,6 +62,25 @@ public class AirQualityService {
     }
 
     /**
+     * Fetches air quality based on GPS coordinates from LIFF,
+     * then pushes the result to a specific LINE user by userId.
+     */
+    public AirQualityDto fetchAndPushByLocation(String userId, double lat, double lon) {
+        // 1. Fetch nearest city AQI from IQAir using GPS coordinates
+        AirQualityRecord record = iqAirService.fetchAndSaveByLocation(lat, lon);
+
+        // 2. Push result to the LINE user (no replyToken needed)
+        lineMessagingService.pushNotification(userId, record);
+
+        // 3. Mark record as notified and update in DB
+        record.setNotifiedLine(true);
+        repository.save(record);
+
+        // 4. Return clean DTO to caller
+        return new AirQualityDto(record);
+    }
+
+    /**
      * Fetches latest air quality and saves to DB — does NOT send LINE notification.
      * Use this to test IQAir integration without LINE.
      */
