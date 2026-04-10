@@ -15,7 +15,7 @@
 
 Replace this URL with your uploaded GitHub image URL (Option 2):
 
-![LINE LIFF Preview](https://github.com/user-attachments/assets/REPLACE_WITH_YOUR_IMAGE_ID)
+![LINE LIFF Preview](https://github.com/user-attachments/assets/06c81b0b-98fa-4f43-b807-b4e73d2bde0e)
 
 ## Features
 
