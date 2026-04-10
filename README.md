@@ -12,10 +12,11 @@
 > Experimental project for webhook-based bot architecture and AQI notification workflows.
 
 ## LINE LIFF Preview
-
-Replace this URL with your uploaded GitHub image URL (Option 2):
-
-![LINE LIFF Preview](https://github.com/user-attachments/assets/06c81b0b-98fa-4f43-b807-b4e73d2bde0e)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/06c81b0b-98fa-4f43-b807-b4e73d2bde0e"
+       alt="LINE LIFF Preview"
+       width="280" />
+</p>
 
 ## Features
 
