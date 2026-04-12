@@ -53,12 +53,21 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- H2 in-memory database (dev/testing) — swap for PostgreSQL later via properties only -->
+        <!-- PostgreSQL driver —— matches the Docker postgres:17-alpine container -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!-- H2 in-memory (uncomment to switch back for quick testing without Docker) -->
+        <!--
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
+        -->
     </dependencies>
 
     <build>
