@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FoonBot - ตั้งค่าการแจ้งเตือน AQI</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    :root {
+      --bg-1: #0f0c29;
+      --bg-2: #302b63;
+      --bg-3: #24243e;
+      --text: #ffffff;
+      --muted: rgba(255, 255, 255, 0.65);
+      --line: rgba(255, 255, 255, 0.18);
+      --field: rgba(255, 255, 255, 0.09);
+      --field-focus: rgba(79, 172, 254, 0.35);
+      --ok: #34c759;
+      --error: #ff6b6b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: linear-gradient(135deg, var(--bg-1), var(--bg-2), var(--bg-3));
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+    }
+
+    .card {
+      width: min(520px, 100%);
+      border-radius: 20px;
+      padding: 28px 24px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 20px 40px rgba(3, 5, 25, 0.35);
+      animation: fadeInUp 0.35s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h1 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+
+    .subtitle {
+      margin-top: 8px;
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .info-box,
+    .warn-box {
+      margin-top: 12px;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 13px;
+      line-height: 1.45;
+      border: 1px solid var(--line);
+      background: var(--field);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .warn-box {
+      margin-top: 10px;
+      border-color: rgba(255, 107, 107, 0.55);
+      background: rgba(255, 107, 107, 0.12);
+    }
+
+    .warn-box.hidden {
+      display: none;
+    }
+
+    .warn-box a {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    .divider {
+      height: 1px;
+      margin: 18px 0;
+      background: var(--line);
+    }
+
+    .row {
+      margin-bottom: 16px;
+    }
+
+    .label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.92);
+      letter-spacing: 0.15px;
+    }
+
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--field);
+    }
+
+    .toggle-label {
+      display: block;
+      font-size: 15px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.95);
+    }
+
+    .toggle-hint {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    input[type="time"],
+    select {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--field);
+      color: var(--text);
+      padding: 12px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input[type="time"] {
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      opacity: 0.85;
+    }
+
+    select {
+      -webkit-appearance: none;
+      appearance: none;
+      padding-right: 36px;
+      background-image:
+        linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.8) 50%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.8) 50%, transparent 50%);
+      background-position:
+        calc(100% - 18px) calc(50% - 2px),
+        calc(100% - 12px) calc(50% - 2px);
+      background-size: 6px 6px, 6px 6px;
+      background-repeat: no-repeat;
+    }
+
+    input:focus {
+      border-color: rgba(79, 172, 254, 0.8);
+      box-shadow: 0 0 0 3px var(--field-focus);
+    }
+
+    .switch {
+      position: relative;
+      width: 52px;
+      height: 30px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.25);
+      transition: background 0.2s;
+    }
+
+    .slider:before {
+      content: "";
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      left: 4px;
+      top: 4px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.2s;
+    }
+
+    .switch input:checked+.slider {
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+    }
+
+    .switch input:checked+.slider:before {
+      transform: translateX(22px);
+    }
+
+    .actions {
+      margin-top: 22px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    .btn:active {
+      transform: scale(0.99);
+    }
+
+    .btn-primary {
+      color: #fff;
+      background: linear-gradient(135deg, #4facfe, #00f2fe);
+    }
+
+    .btn-light {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.14);
+      border: 1px solid var(--line);
+    }
+
+    .status {
+      margin-top: 12px;
+      min-height: 20px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .status.ok {
+      color: var(--ok);
+    }
+
+    .status.error {
+      color: var(--error);
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        border-radius: 16px;
+        padding: 20px 16px;
+      }
+
+      .actions {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h1>AQI Schedule Settings</h1>
+    <p class="subtitle">เปิดหรือปิดการแจ้งเตือน และเลือกเวลาแจ้งเตือนรายวันของคุณ</p>
+    <p class="warn-box hidden" id="locationWarning">ยังไม่สามารถเปิดการแจ้งเตือนได้ กรุณากดตรวจ AQI อย่างน้อย 1
+      ครั้งเพื่อบันทึกตำแหน่งล่าสุดก่อน <a href="/liff/aqi">ไปหน้าตรวจ AQI</a></p>
+    <div class="divider"></div>
+
+    <div class="row">
+      <div class="toggle-wrap">
+        <div>
+          <span class="toggle-label">แจ้งเตือนรายวัน</span>
+          <span class="toggle-hint">ค่าเริ่มต้น 07:00 (Asia/Bangkok)</span>
+        </div>
+        <label class="switch" aria-label="Toggle daily notifications">
+          <input id="notifyEnabled" type="checkbox" />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="row">
+      <label class="label" for="notifyTime">เวลาแจ้งเตือน</label>
+      <input id="notifyTime" type="time" step="60" value="07:00" />
+    </div>
+
+    <div class="row">
+      <label class="label" for="timezone">เขตเวลา</label>
+      <select id="timezone">
+        <option value="Asia/Bangkok">Asia/Bangkok</option>
+        <option value="Asia/Tokyo">Asia/Tokyo</option>
+        <option value="Asia/Singapore">Asia/Singapore</option>
+        <option value="Asia/Ho_Chi_Minh">Asia/Ho_Chi_Minh</option>
+        <option value="Asia/Jakarta">Asia/Jakarta</option>
+        <option value="UTC">UTC</option>
+      </select>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="saveBtn">บันทึกการตั้งค่า</button>
+      <button class="btn btn-light" id="closeBtn">ปิด</button>
+    </div>
+
+    <p class="status" id="status">กำลังเริ่มต้น...</p>
+  </div>
+
+  <script>
+    const LIFF_ID = "2009767326-vloat8gW";
+    const API_ORIGIN = window.location.origin;
+
+    const notifyEnabledEl = document.getElementById("notifyEnabled");
+    const notifyTimeEl = document.getElementById("notifyTime");
+    const timezoneEl = document.getElementById("timezone");
+    const saveBtn = document.getElementById("saveBtn");
+    const closeBtn = document.getElementById("closeBtn");
+    const statusEl = document.getElementById("status");
+    const locationWarningEl = document.getElementById("locationWarning");
+
+    let userId = null;
+    let hasLocationSaved = false;
+
+    function setStatus(msg, type = "") {
+      statusEl.textContent = msg;
+      statusEl.className = "status" + (type ? " " + type : "");
+    }
+
+    function setDisabled(disabled) {
+      const formDisabled = disabled || !hasLocationSaved;
+      notifyEnabledEl.disabled = formDisabled;
+      notifyTimeEl.disabled = formDisabled;
+      timezoneEl.disabled = formDisabled;
+      saveBtn.disabled = formDisabled;
+      closeBtn.disabled = false;
+      saveBtn.style.opacity = formDisabled ? "0.65" : "1";
+      closeBtn.style.opacity = disabled ? "0.7" : "1";
+    }
+
+    function setLocationState(hasLocation) {
+      hasLocationSaved = hasLocation;
+      locationWarningEl.classList.toggle("hidden", hasLocation);
+    }
+
+    async function loadSettings() {
+      setStatus("กำลังโหลดการตั้งค่า...");
+      const response = await fetch(`${API_ORIGIN}/api/users/me/settings?userId=${encodeURIComponent(userId)}`);
+      if (!response.ok) {
+        throw new Error(`ไม่สามารถโหลดการตั้งค่าได้ (${response.status})`);
+      }
+
+      const data = await response.json();
+      notifyEnabledEl.checked = Boolean(data.notifyEnabled);
+      notifyTimeEl.value = data.notifyTime || "07:00";
+      setLocationState(data.lastLat != null && data.lastLon != null);
+      const timezone = data.timezone || "Asia/Bangkok";
+      if (![...timezoneEl.options].some((opt) => opt.value === timezone)) {
+        const option = document.createElement("option");
+        option.value = timezone;
+        option.textContent = timezone;
+        timezoneEl.appendChild(option);
+      }
+      timezoneEl.value = timezone;
+
+      if (hasLocationSaved) {
+        setStatus("โหลดสำเร็จ คุณสามารถเปลี่ยนค่าได้ตลอด", "ok");
+      } else {
+        setStatus("กรุณาตรวจ AQI 1 ครั้ง เพื่อเปิดใช้งานการตั้งค่าแจ้งเตือน");
+      }
+    }
+
+    async function saveSettings() {
+      if (!hasLocationSaved) {
+        setStatus("ยังไม่สามารถตั้งเวลาได้ กรุณาตรวจ AQI ก่อน", "error");
+        return;
+      }
+
+      setDisabled(true);
+      setStatus("กำลังบันทึกการตั้งค่า...");
+
+      const payload = {
+        userId,
+        notifyEnabled: notifyEnabledEl.checked,
+        notifyTime: notifyTimeEl.value,
+        timezone: timezoneEl.value.trim()
+      };
+
+      try {
+        const response = await fetch(`${API_ORIGIN}/api/users/me/settings`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+          if (response.status === 400) {
+            throw new Error("รูปแบบเวลา/เขตเวลาไม่ถูกต้อง ตัวอย่าง: Asia/Bangkok");
+          }
+          throw new Error(`บันทึกไม่สำเร็จ (${response.status})`);
+        }
+
+        const data = await response.json();
+        notifyEnabledEl.checked = Boolean(data.notifyEnabled);
+        notifyTimeEl.value = data.notifyTime || notifyTimeEl.value;
+        timezoneEl.value = data.timezone || timezoneEl.value;
+        setStatus("บันทึกสำเร็จ", "ok");
+      } catch (err) {
+        setStatus(err.message, "error");
+      } finally {
+        setDisabled(false);
+      }
+    }
+
+    async function init() {
+      setDisabled(true);
+      setStatus("กำลังเชื่อมต่อ LINE...");
+      await liff.init({ liffId: LIFF_ID });
+
+      if (!liff.isLoggedIn()) {
+        liff.login();
+        return;
+      }
+
+      const profile = await liff.getProfile();
+      userId = profile.userId;
+      await loadSettings();
+      setDisabled(false);
+    }
+
+    saveBtn.addEventListener("click", saveSettings);
+    closeBtn.addEventListener("click", () => {
+      if (window.liff && liff.isInClient()) {
+        liff.closeWindow();
+      } else {
+        window.close();
+      }
+    });
+
+    init().catch((err) => {
+      console.error(err);
+      setStatus(`เริ่มต้นระบบไม่สำเร็จ: ${err.message}`, "error");
+      setDisabled(false);
+    });
+  </script>
+</body>
+
+</html>

@@ -24,4 +24,13 @@ public class LiffController {
                 .contentType(MediaType.TEXT_HTML)
                 .body(html);
     }
+
+    @GetMapping(value = "/liff/settings", produces = MediaType.TEXT_HTML_VALUE)
+    public ResponseEntity<String> liffSettings() throws IOException {
+        ClassPathResource resource = new ClassPathResource("static/liff/settings/index.html");
+        String html = resource.getContentAsString(StandardCharsets.UTF_8);
+        return ResponseEntity.ok()
+                .contentType(MediaType.TEXT_HTML)
+                .body(html);
+    }
 }

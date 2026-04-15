@@ -44,6 +44,10 @@ public class AirQualityRecord {
     @Column(name = "notified_line")
     private Boolean notifiedLine = false;
 
+    @ManyToOne
+    @JoinColumn(name = "line_user_id")
+    private LineUser lineUser;
+
     // ─── Constructors ──────────────────────────────────────────────────────────
 
     public AirQualityRecord() {}
@@ -92,4 +96,7 @@ public class AirQualityRecord {
 
     public Boolean getNotifiedLine() { return notifiedLine; }
     public void setNotifiedLine(Boolean notifiedLine) { this.notifiedLine = notifiedLine; }
+
+    public LineUser getLineUser() { return lineUser; }
+    public void setLineUser(LineUser lineUser) { this.lineUser = lineUser; }
 }

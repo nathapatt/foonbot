@@ -5,7 +5,7 @@
 ![Java](https://img.shields.io/badge/Java-21-007396?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.13-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-C71A36?style=for-the-badge&logo=apachemaven&logoColor=white)
-![H2](https://img.shields.io/badge/H2-Database-09476B?style=for-the-badge)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-336791?style=for-the-badge&logo=postgresql&logoColor=white)
 ![LINE](https://img.shields.io/badge/LINE-Messaging_API-00C300?style=for-the-badge&logo=line&logoColor=white)
 ![MIT](https://img.shields.io/badge/MIT-green?style=for-the-badge)
 
@@ -23,16 +23,17 @@
 - Realtime AQI fetch from IQAir API
 - LINE broadcast and direct reply flows
 - Rich Flex message output for AQI details
-- Scheduled notifications (07:00 and 18:00, Asia/Bangkok)
-- REST endpoints for fetch, notify, latest, and history
-- Local development with H2 in-memory database
+- Per-user daily schedule (default 07:00, Asia/Bangkok)
+- User-specific AQI history (records linked to LINE user)
+- REST endpoints for air quality, user settings, and history
+- LIFF pages for AQI check and schedule settings
 
 ## Tech Stack
 
 - Java 21
 - Spring Boot 3.5.x
 - Spring Web + Spring Data JPA + Scheduler
-- H2 Database
+- PostgreSQL (Docker Compose)
 - Maven Wrapper (`./mvnw`)
 - LINE Messaging API
 - IQAir API
@@ -42,6 +43,7 @@
 - Java 21+
 - LINE Messaging API channel
 - IQAir API key
+- Docker + Docker Compose
 - ngrok (or Cloudflare Tunnel) for local webhook testing
 
 ## Setup
@@ -55,7 +57,13 @@ IQAIR_API_KEY=your_iqair_api_key
 LINE_CHANNEL_TOKEN=your_line_channel_access_token
 ```
 
-4. Run the app:
+4. Start PostgreSQL:
+
+```bash
+docker compose up -d
+```
+
+5. Run the app:
 
 ```bash
 ./mvnw spring-boot:run
@@ -70,7 +78,19 @@ Base path: `/api/air-quality`
 - `GET /notify` - fetch AQI + broadcast LINE message
 - `GET /fetch` - fetch AQI only
 - `GET /latest` - get latest AQI record
-- `GET /history` - get last 10 records
+- `GET /history` - get last 10 records (global)
+- `GET /history/me?userId=<LINE_USER_ID>&limit=30` - get user-specific history
+- `POST /by-location` - save latest location + push AQI to that user
+
+Base path: `/api/users`
+
+- `GET /me/settings?userId=<LINE_USER_ID>` - get user notification settings
+- `PUT /me/settings` - update `notifyEnabled`, `notifyTime`, `timezone`
+
+LIFF routes:
+
+- `/liff/aqi` - get location and check nearest AQI
+- `/liff/settings` - update schedule settings
 
 ### LINE Webhook (Local)
 

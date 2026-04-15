@@ -1,6 +1,8 @@
 package com.foonbot.aqi.repository;
 
 import com.foonbot.aqi.model.AirQualityRecord;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,4 +16,6 @@ public interface AirQualityRepository extends JpaRepository<AirQualityRecord, Lo
 
     // Get the single most recent record (for latest endpoint)
     AirQualityRecord findTopByOrderByFetchedAtDesc();
+
+    Page<AirQualityRecord> findByLineUserLineUserIdOrderByFetchedAtDesc(String lineUserId, Pageable pageable);
 }

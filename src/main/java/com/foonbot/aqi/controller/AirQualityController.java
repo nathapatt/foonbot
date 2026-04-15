@@ -1,16 +1,18 @@
 package com.foonbot.aqi.controller;
 
 import com.foonbot.aqi.dtos.AirQualityDto;
+import com.foonbot.aqi.dtos.ByLocationRequest;
 import com.foonbot.aqi.service.AirQualityService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/air-quality")
@@ -64,22 +66,30 @@ public class AirQualityController {
     }
 
     /**
+     * Get user-specific air quality history (newest first).
+     * GET /api/air-quality/history/me?userId=...&limit=30
+     */
+    @GetMapping("/history/me")
+    public ResponseEntity<List<AirQualityDto>> userHistory(
+            @RequestParam String userId,
+            @RequestParam(required = false) Integer limit) {
+        List<AirQualityDto> result = airQualityService.getUserHistory(userId, limit);
+        return ResponseEntity.ok(result);
+    }
+
+    /**
      * Called by the LIFF page with the user's GPS location.
      * Fetches nearest city AQI and pushes a Flex Message to the LINE user.
      * POST /api/air-quality/by-location
      * Body: { "userId": "...", "lat": 13.75, "lon": 100.50 }
      */
     @PostMapping("/by-location")
-    public ResponseEntity<AirQualityDto> byLocation(@RequestBody Map<String, Object> body) {
-        String userId = (String) body.get("userId");
-        double lat    = ((Number) body.get("lat")).doubleValue();
-        double lon    = ((Number) body.get("lon")).doubleValue();
-
-        if (userId == null || userId.isBlank()) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        AirQualityDto result = airQualityService.fetchAndPushByLocation(userId, lat, lon);
+    public ResponseEntity<AirQualityDto> byLocation(@Valid @RequestBody ByLocationRequest request) {
+        AirQualityDto result = airQualityService.fetchAndPushByLocation(
+                request.getUserId(),
+                request.getLat(),
+                request.getLon()
+        );
         return ResponseEntity.ok(result);
     }
 }

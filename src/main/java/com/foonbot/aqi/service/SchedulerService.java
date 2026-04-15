@@ -17,31 +17,18 @@ public class SchedulerService {
     }
 
     /**
-     * Runs every day at 7:00 AM (Asia/Bangkok = UTC+7)
-     * Cron format: second  minute  hour  day  month  weekday
+     * Runs every minute and sends AQI only to users due at their configured local time.
      */
-    @Scheduled(cron = "0 0 7 * * *", zone = "Asia/Bangkok")
-    public void morningNotify() {
-        log.info("⏰ [Scheduler] 7:00 AM — Running morning air quality check...");
+    @Scheduled(cron = "0 * * * * *")
+    public void userScheduleNotify() {
         try {
-            var result = airQualityService.fetchAndNotify();
-            log.info("✅ Morning notification sent. AQI: {} ({})", result.getAqiUs(), result.getAqiLevel());
+            AirQualityService.ScheduledDispatchResult result = airQualityService.dispatchDueUserNotifications();
+            if (result.sent() > 0 || result.failed() > 0) {
+                log.info("Scheduler run complete. Candidates: {}, sent: {}, failed: {}",
+                        result.candidates(), result.sent(), result.failed());
+            }
         } catch (Exception e) {
-            log.error("❌ Morning notification failed: {}", e.getMessage());
-        }
-    }
-
-    /**
-     * Runs every day at 6:00 PM (Asia/Bangkok = UTC+7)
-     */
-    @Scheduled(cron = "0 0 18 * * *", zone = "Asia/Bangkok")
-    public void eveningNotify() {
-        log.info("⏰ [Scheduler] 6:00 PM — Running evening air quality check...");
-        try {
-            var result = airQualityService.fetchAndNotify();
-            log.info("✅ Evening notification sent. AQI: {} ({})", result.getAqiUs(), result.getAqiLevel());
-        } catch (Exception e) {
-            log.error("❌ Evening notification failed: {}", e.getMessage());
+            log.error("Scheduler dispatch failed: {}", e.getMessage());
         }
     }
 }
