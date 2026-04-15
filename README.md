@@ -13,7 +13,7 @@
 
 ## LINE LIFF Preview
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/06c81b0b-98fa-4f43-b807-b4e73d2bde0e"
+  <img src="https://github.com/user-attachments/assets/123cc87c-5ced-4485-99ac-10da9f9a1863"
        alt="LINE LIFF Preview"
        width="280" />
 </p>
@@ -21,9 +21,11 @@
 ## Features
 
 - Realtime AQI fetch from IQAir API
-- LINE broadcast and direct reply flows
+- LINE broadcast, direct reply, and user push flows
 - Rich Flex message output for AQI details
 - Per-user daily schedule (default 07:00, Asia/Bangkok)
+- Schedule sends only after user shares location at least once
+- If user changes to a later time in the same day, scheduler can alert again at the new time
 - User-specific AQI history (records linked to LINE user)
 - REST endpoints for air quality, user settings, and history
 - LIFF pages for AQI check and schedule settings
@@ -81,11 +83,19 @@ Base path: `/api/air-quality`
 - `GET /history` - get last 10 records (global)
 - `GET /history/me?userId=<LINE_USER_ID>&limit=30` - get user-specific history
 - `POST /by-location` - save latest location + push AQI to that user
+  - body: `{ "userId": "...", "lat": 13.75, "lon": 100.50 }`
 
 Base path: `/api/users`
 
 - `GET /me/settings?userId=<LINE_USER_ID>` - get user notification settings
 - `PUT /me/settings` - update `notifyEnabled`, `notifyTime`, `timezone`
+
+Scheduler behavior:
+
+- The scheduler runs every minute.
+- It sends only when the current minute matches each user's `notifyTime` and `timezone`.
+- It requires saved location (`lastLat` and `lastLon`), so user must check AQI at least once.
+- If the user updates to a later time in the same day, it can send again at that new time.
 
 LIFF routes:
 
