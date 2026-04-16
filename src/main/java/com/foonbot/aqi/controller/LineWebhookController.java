@@ -23,6 +23,10 @@ public class LineWebhookController {
         this.airQualityService = airQualityService;
     }
 
+    /**
+     * Handles text commands that are meant to be answered directly in LINE chat.
+     * AQI checking itself is handled through the LIFF location flow, not this webhook.
+     */
     @PostMapping("/webhook")
     public ResponseEntity<Void> handleWebhook(@RequestBody JsonNode payload) {
         JsonNode events = payload.path("events");
@@ -42,19 +46,9 @@ public class LineWebhookController {
                 if ("text".equals(messageType)) {
                     String text = message.path("text").asText("");
 
-                    // ─────────────────────────────────────────────────────────────
-                    // Action 1: "Check AQI"
-                    // Instantly fetch real-time data and reply with Flex Message
-                    // ─────────────────────────────────────────────────────────────
-                    if ("Check Air Quality".equalsIgnoreCase(text)) {
+                    if (isHealthGuidelineCommand(text)) {
                         try {
-                            airQualityService.fetchAndReply(replyToken);
-                        } catch (Exception e) {
-                            log.error("Failed to fetch AQI for LINE reply: {}", e.getMessage(), e);
-                        }
-                    } else if (isHealthGuidelineCommand(text)) {
-                        try {
-                            airQualityService.replyHealthGuideline(replyToken, userId);
+                            airQualityService.replyHealthGuidelineText(replyToken, userId);
                         } catch (Exception e) {
                             log.error("Failed to generate LINE health guideline: {}", e.getMessage(), e);
                         }

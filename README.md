@@ -137,12 +137,12 @@ All 3 LIFF pages use IDs from environment-based config instead of hardcoded IDs.
 
 Send one of these messages in LINE chat:
 
-- `Check Air Quality`
-  Replies with the latest AQI result as a Flex message.
 - `คำแนะนำสุขภาพ`
 - `Health Guideline`
 - `Health Guidelines`
   Replies with a short health-guideline text generated from the user's recent AQI history.
+
+AQI checking for normal users happens through the LIFF AQI page at `/liff/aqi`, where the user shares live location.
 
 ### Scheduler Behavior
 
@@ -181,12 +181,6 @@ https://<your-cloudflared-domain>/api/line/webhook
 - Auto-response messages = OFF
 
 5. Test in LINE chat with:
-
-```text
-Check Air Quality
-```
-
-or
 
 ```text
 คำแนะนำสุขภาพ

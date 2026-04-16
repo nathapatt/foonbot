@@ -73,27 +73,9 @@ public class AirQualityService {
     }
 
     /**
-     * Fetches latest air quality, saves to DB, replies to a specific LINE user,
-     * and returns the result as a DTO.
-     */
-    public AirQualityDto fetchAndReply(String replyToken) {
-        // 1. Fetch from IQAir and save to DB
-        AirQualityRecord record = iqAirService.fetchAndSave();
-
-        // 2. Reply to the specific user via LINE
-        lineMessagingService.replyNotification(replyToken, record);
-
-        // 3. Mark record as notified and update in DB
-        record.setNotifiedLine(true);
-        repository.save(record);
-
-        // 4. Return clean DTO to caller
-        return new AirQualityDto(record);
-    }
-
-    /**
      * Fetches air quality based on GPS coordinates from LIFF,
-     * then pushes the result to a specific LINE user by userId.
+     * saves the user's latest location, then pushes the result to that LINE user.
+     * This is the main AQI-check flow used by the app.
      */
     public AirQualityDto fetchAndPushByLocation(String userId, double lat, double lon) {
         // 0. Upsert user and latest location
@@ -203,7 +185,10 @@ public class AirQualityService {
                 .collect(Collectors.toList());
     }
 
-    public void replyHealthGuideline(String replyToken, String userId) {
+    /**
+     * Replies in LINE chat with short health guidance based on the current user's AQI history.
+     */
+    public void replyHealthGuidelineText(String replyToken, String userId) {
         try {
             String guideline = healthGuidelineService.generateGuidelineText(userId);
             lineMessagingService.replyText(replyToken, guideline);
