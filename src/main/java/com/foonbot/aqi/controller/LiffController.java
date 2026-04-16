@@ -13,6 +13,12 @@ import java.nio.charset.StandardCharsets;
 @RestController
 public class LiffController {
 
+    @Value("${liff.aqi-id:${liff.id:}}")
+    private String aqiLiffId;
+
+    @Value("${liff.settings-id:}")
+    private String settingsLiffId;
+
     @Value("${liff.history-id:}")
     private String historyLiffId;
 
@@ -22,7 +28,8 @@ public class LiffController {
      */
     @GetMapping(value = "/liff/aqi", produces = MediaType.TEXT_HTML_VALUE)
     public ResponseEntity<String> liffAqi() throws IOException {
-        String html = loadHtml("static/liff/aqi/index.html");
+        String html = loadHtml("static/liff/aqi/index.html")
+                .replace("__LIFF_AQI_ID__", aqiLiffId == null ? "" : aqiLiffId);
         return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_HTML)
                 .body(html);
@@ -30,7 +37,8 @@ public class LiffController {
 
     @GetMapping(value = "/liff/settings", produces = MediaType.TEXT_HTML_VALUE)
     public ResponseEntity<String> liffSettings() throws IOException {
-        String html = loadHtml("static/liff/settings/index.html");
+        String html = loadHtml("static/liff/settings/index.html")
+                .replace("__LIFF_SETTINGS_ID__", settingsLiffId == null ? "" : settingsLiffId);
         return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_HTML)
                 .body(html);
