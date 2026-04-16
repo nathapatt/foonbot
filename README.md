@@ -106,6 +106,50 @@ docker compose up -d
 ./mvnw spring-boot:run
 ```
 
+## LINE Console Setup
+
+### LIFF Apps in LINE Developers
+
+Create 3 LIFF apps in LINE Developers and point each one to your app endpoint:
+
+- AQI page
+  - Endpoint URL: `https://<your-cloudflared-domain>/liff/aqi`
+- History page
+  - Endpoint URL: `https://<your-cloudflared-domain>/liff/history`
+- Settings page
+  - Endpoint URL: `https://<your-cloudflared-domain>/liff/settings`
+
+Example during local development:
+
+```text
+https://wilderness-boards-valued-onion.trycloudflare.com/liff/aqi
+```
+
+After creating the LIFF apps, copy each LIFF ID into `.env`:
+
+```env
+LIFF_AQI_ID=your_aqi_liff_id_here
+LIFF_SETTINGS_ID=your_settings_liff_id_here
+LIFF_HISTORY_ID=your_history_liff_id_here
+```
+
+### Rich Menu in LINE Official Account Manager
+
+For rich menu actions:
+
+- Section 1 `Check AQI Right Now`
+  - Type: `Link`
+  - URL: `https://liff.line.me/<LIFF_AQI_ID>`
+- Section 2 `History / Trend`
+  - Type: `Link`
+  - URL: `https://liff.line.me/<LIFF_HISTORY_ID>`
+- Section 3 `AQI Schedule Settings`
+  - Type: `Link`
+  - URL: `https://liff.line.me/<LIFF_SETTINGS_ID>`
+- Section 4 `Health Guideline`
+  - Type: `Text`
+  - Text: `คำแนะนำสุขภาพ`
+
 ## Usage
 
 ### Local API
