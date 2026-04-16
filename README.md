@@ -73,7 +73,7 @@ The LINE rich menu is designed around 4 user-facing sections:
 - IQAir API key
 - Groq API key for health-guideline generation
 - Docker + Docker Compose
-- ngrok or Cloudflare Tunnel for local webhook testing
+- Cloudflare Tunnel (`cloudflared`) for local webhook testing
 
 ## Setup
 
@@ -162,16 +162,16 @@ Send one of these messages in LINE chat:
 ## LINE Webhook (Local)
 
 1. Start the app on port `8080`.
-2. Start ngrok:
+2. Start Cloudflare Tunnel:
 
 ```bash
-ngrok http 8080
+cloudflared tunnel --url http://localhost:8080
 ```
 
 3. Set the LINE webhook URL in LINE Developers Console:
 
 ```text
-https://<your-ngrok-domain>/api/line/webhook
+https://<your-cloudflared-domain>/api/line/webhook
 ```
 
 4. Ensure:
