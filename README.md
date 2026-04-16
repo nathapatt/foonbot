@@ -15,7 +15,7 @@
 ## LINE LIFF Preview
 
 <p align="center">
-  <img src="https://github.com/user-attachments/assets/123cc87c-5ced-4485-99ac-10da9f9a1863"
+  <img src="https://github.com/user-attachments/assets/83a2d5f5-d6a5-4633-af4e-f50a1cefec90"
        alt="LINE LIFF Preview"
        width="280" />
 </p>
