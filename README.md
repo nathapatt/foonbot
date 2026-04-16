@@ -1,6 +1,6 @@
 # Foon AQI Bot
 
-**Foon AQI Bot** is a Spring Boot LINE bot for checking air quality, saving user-specific AQI history, sending scheduled notifications, and generating short health guidance from recent AQI history.
+**Foon AQI Bot** is a Spring Boot LINE bot for checking air quality, saving user-specific AQI history, sending scheduled notifications, and generating short health guidance from recent AQI history, designed with Thai users in mind.
 
 ![Java](https://img.shields.io/badge/Java-21-007396?style=for-the-badge&logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.5.13-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
@@ -10,7 +10,7 @@
 ![Groq](https://img.shields.io/badge/Groq-LLM-black?style=for-the-badge)
 ![MIT](https://img.shields.io/badge/MIT-green?style=for-the-badge)
 
-> Mini project for a LINE-based AQI assistant with LIFF flows, per-user history, scheduled alerts, and LLM-assisted health guidance.
+> Mini project for a LINE-based AQI assistant tailored for Thailand, where air pollution is a recurring public-health issue and LINE is already part of many people's daily communication.
 
 ## LINE LIFF Preview
 
@@ -32,6 +32,12 @@
 - Daily scheduled notifications by user time and timezone
 - Health-guideline chat reply generated from AQI history
 - Groq integration with safe fallback to rule-based health text
+
+## Why Thailand
+
+This project is aimed at Thai users, especially in places where PM2.5 and seasonal haze are a serious concern, such as Chiang Mai and other high-risk areas in Thailand.
+
+Instead of asking users to install a separate app, Foon AQI Bot uses LINE because it is already one of the most familiar and widely used messaging platforms in Thailand. That makes AQI updates, alerts, and health guidance easier to access in a channel people already check every day.
 
 ## Project Sections
 
