@@ -1,0 +1,84 @@
+{
+  "properties": [
+    {
+      "name": "iqair.api.key",
+      "type": "java.lang.String",
+      "description": "API key for IQAir requests."
+    },
+    {
+      "name": "iqair.api.url",
+      "type": "java.lang.String",
+      "description": "Base URL for IQAir API."
+    },
+    {
+      "name": "iqair.city",
+      "type": "java.lang.String",
+      "description": "Default city used for non-location AQI lookups."
+    },
+    {
+      "name": "iqair.state",
+      "type": "java.lang.String",
+      "description": "Default state used for non-location AQI lookups."
+    },
+    {
+      "name": "iqair.country",
+      "type": "java.lang.String",
+      "description": "Default country used for non-location AQI lookups."
+    },
+    {
+      "name": "line.messaging.channel-token",
+      "type": "java.lang.String",
+      "description": "LINE Messaging API channel access token."
+    },
+    {
+      "name": "line.messaging.broadcast-url",
+      "type": "java.lang.String",
+      "description": "LINE Messaging API broadcast endpoint."
+    },
+    {
+      "name": "line.messaging.reply-url",
+      "type": "java.lang.String",
+      "description": "LINE Messaging API reply endpoint."
+    },
+    {
+      "name": "line.messaging.push-url",
+      "type": "java.lang.String",
+      "description": "LINE Messaging API push endpoint."
+    },
+    {
+      "name": "groq.api.key",
+      "type": "java.lang.String",
+      "description": "Groq API key for health-guideline generation."
+    },
+    {
+      "name": "groq.api.url",
+      "type": "java.lang.String",
+      "description": "Groq chat completions endpoint."
+    },
+    {
+      "name": "groq.model",
+      "type": "java.lang.String",
+      "description": "Groq model name used for health-guideline generation."
+    },
+    {
+      "name": "liff.id",
+      "type": "java.lang.String",
+      "description": "Default LIFF ID."
+    },
+    {
+      "name": "liff.aqi-id",
+      "type": "java.lang.String",
+      "description": "LIFF ID for the AQI check page."
+    },
+    {
+      "name": "liff.settings-id",
+      "type": "java.lang.String",
+      "description": "LIFF ID for the settings page."
+    },
+    {
+      "name": "liff.history-id",
+      "type": "java.lang.String",
+      "description": "LIFF ID for the history page."
+    }
+  ]
+}

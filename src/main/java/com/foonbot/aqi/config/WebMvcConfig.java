@@ -1,6 +1,7 @@
 package com.foonbot.aqi.config;
 
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -12,7 +13,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
      * Also register /liff/aqi/ to forward to the static index.html.
      */
     @Override
-    public void addViewControllers(ViewControllerRegistry registry) {
+    public void addViewControllers(@NonNull ViewControllerRegistry registry) {
         registry.addRedirectViewController("/liff/aqi", "/liff/aqi/");
     }
 }

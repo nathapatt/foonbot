@@ -1,5 +1,6 @@
 package com.foonbot.aqi.service;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -15,7 +16,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -72,7 +75,7 @@ public class HealthGuidelineService {
         return generateWithGroq(context).orElseGet(() -> buildFallbackText(context));
     }
 
-    private GuidanceContext buildContext(List<AirQualityDto> history) {
+    private @NonNull GuidanceContext buildContext(List<AirQualityDto> history) {
         AirQualityDto latest = history.get(0);
         String trend = resolveTrend(history);
         String cautionGroup = resolveCautionGroup(latest.getAqiUs());
@@ -127,10 +130,11 @@ public class HealthGuidelineService {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setBearerAuth(groqApiKey.trim());
+            String apiKey = requireNonBlank(groqApiKey, "groqApiKey");
+            headers.setBearerAuth(apiKey);
 
             Map<String, Object> body = new LinkedHashMap<>();
-            body.put("model", groqModel);
+            body.put("model", defaultIfBlank(groqModel, "openai/gpt-oss-120b"));
             body.put("temperature", 0.2);
             body.put("max_tokens", 500);
             body.put("response_format", Map.of("type", "json_object"));
@@ -155,7 +159,8 @@ public class HealthGuidelineService {
             ));
 
             HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-            JsonNode response = restTemplate.postForObject(groqApiUrl, request, JsonNode.class);
+            String apiUrl = defaultIfBlank(groqApiUrl, "https://api.groq.com/openai/v1/chat/completions");
+            JsonNode response = restTemplate.postForObject(apiUrl, request, JsonNode.class);
             if (response == null) {
                 return java.util.Optional.empty();
             }
@@ -172,7 +177,7 @@ public class HealthGuidelineService {
 
             JsonNode json = objectMapper.readTree(content);
             return java.util.Optional.of(formatReply(json, context));
-        } catch (Exception ex) {
+        } catch (RestClientException | IOException ex) {
             log.warn("Groq health guideline fallback: {}", ex.getMessage());
             return java.util.Optional.empty();
         }
@@ -295,7 +300,7 @@ public class HealthGuidelineService {
         );
     }
 
-    private String resolveTrend(List<AirQualityDto> history) {
+    private @NonNull String resolveTrend(List<AirQualityDto> history) {
         if (history.size() < 4) {
             return "stable";
         }
@@ -312,6 +317,20 @@ public class HealthGuidelineService {
             return "improving";
         }
         return "stable";
+    }
+
+    private @NonNull String defaultIfBlank(String value, String fallback) {
+        if (value == null || value.isBlank()) {
+            return fallback;
+        }
+        return value.trim();
+    }
+
+    private @NonNull String requireNonBlank(String value, String fieldName) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(fieldName + " is required");
+        }
+        return value.trim();
     }
 
     private double average(List<AirQualityDto> items) {

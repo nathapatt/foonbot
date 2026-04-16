@@ -1,8 +1,6 @@
 package com.foonbot.aqi.controller;
 
-import java.util.List;
-import java.util.Map;
-
+import com.fasterxml.jackson.databind.JsonNode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -10,10 +8,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.foonbot.aqi.service.AirQualityService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/line")
 public class LineWebhookController {
+
+    private static final Logger log = LoggerFactory.getLogger(LineWebhookController.class);
 
     private final AirQualityService airQualityService;
 
@@ -21,27 +23,24 @@ public class LineWebhookController {
         this.airQualityService = airQualityService;
     }
 
-    @SuppressWarnings("unchecked")
     @PostMapping("/webhook")
-    public ResponseEntity<Void> handleWebhook(@RequestBody Map<String, Object> payload) {
-        if (!payload.containsKey("events")) {
+    public ResponseEntity<Void> handleWebhook(@RequestBody JsonNode payload) {
+        JsonNode events = payload.path("events");
+        if (!events.isArray()) {
             return ResponseEntity.ok().build();
         }
 
-        List<Map<String, Object>> events = (List<Map<String, Object>>) payload.get("events");
+        for (JsonNode event : events) {
+            String type = event.path("type").asText();
+            String replyToken = event.path("replyToken").asText(null);
+            String userId = event.path("source").path("userId").asText(null);
 
-        for (Map<String, Object> event : events) {
-            String type = (String) event.get("type");
-            String replyToken = (String) event.get("replyToken");
-            Map<String, Object> source = (Map<String, Object>) event.get("source");
-            String userId = source != null ? (String) source.get("userId") : null;
-
-            if ("message".equals(type) && event.containsKey("message")) {
-                Map<String, Object> message = (Map<String, Object>) event.get("message");
-                String messageType = (String) message.get("type");
+            if ("message".equals(type)) {
+                JsonNode message = event.path("message");
+                String messageType = message.path("type").asText();
 
                 if ("text".equals(messageType)) {
-                    String text = (String) message.get("text");
+                    String text = message.path("text").asText("");
 
                     // ─────────────────────────────────────────────────────────────
                     // Action 1: "Check AQI"
@@ -51,15 +50,13 @@ public class LineWebhookController {
                         try {
                             airQualityService.fetchAndReply(replyToken);
                         } catch (Exception e) {
-                            System.err.println("Failed to fetch or reply: " + e.getMessage());
-                            e.printStackTrace();
+                            log.error("Failed to fetch AQI for LINE reply: {}", e.getMessage(), e);
                         }
                     } else if (isHealthGuidelineCommand(text)) {
                         try {
                             airQualityService.replyHealthGuideline(replyToken, userId);
                         } catch (Exception e) {
-                            System.err.println("Failed to generate health guideline: " + e.getMessage());
-                            e.printStackTrace();
+                            log.error("Failed to generate LINE health guideline: {}", e.getMessage(), e);
                         }
                     }
                 }

@@ -4,11 +4,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 @RestController
 public class LiffController {
@@ -31,7 +33,7 @@ public class LiffController {
         String html = loadHtml("static/liff/aqi/index.html")
                 .replace("__LIFF_AQI_ID__", aqiLiffId == null ? "" : aqiLiffId);
         return ResponseEntity.ok()
-                .contentType(MediaType.TEXT_HTML)
+                .contentType(Objects.requireNonNull(MediaType.TEXT_HTML))
                 .body(html);
     }
 
@@ -40,7 +42,7 @@ public class LiffController {
         String html = loadHtml("static/liff/settings/index.html")
                 .replace("__LIFF_SETTINGS_ID__", settingsLiffId == null ? "" : settingsLiffId);
         return ResponseEntity.ok()
-                .contentType(MediaType.TEXT_HTML)
+                .contentType(Objects.requireNonNull(MediaType.TEXT_HTML))
                 .body(html);
     }
 
@@ -49,12 +51,12 @@ public class LiffController {
         String html = loadHtml("static/liff/history/index.html")
                 .replace("__LIFF_HISTORY_ID__", historyLiffId == null ? "" : historyLiffId);
         return ResponseEntity.ok()
-                .contentType(MediaType.TEXT_HTML)
+                .contentType(Objects.requireNonNull(MediaType.TEXT_HTML))
                 .body(html);
     }
 
-    private String loadHtml(String path) throws IOException {
-        ClassPathResource resource = new ClassPathResource(path);
-        return resource.getContentAsString(StandardCharsets.UTF_8);
+    private @NonNull String loadHtml(@NonNull String path) throws IOException {
+        ClassPathResource resource = new ClassPathResource(Objects.requireNonNull(path));
+        return Objects.requireNonNull(resource.getContentAsString(Objects.requireNonNull(StandardCharsets.UTF_8)));
     }
 }
