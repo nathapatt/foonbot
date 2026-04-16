@@ -4,20 +4,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FoonBot - ตั้งค่าการแจ้งเตือน AQI</title>
+  <title>FoonBot - AQI Schedule Settings</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
     :root {
-      --bg-1: #0f0c29;
-      --bg-2: #302b63;
-      --bg-3: #24243e;
-      --text: #ffffff;
-      --muted: rgba(255, 255, 255, 0.65);
-      --line: rgba(255, 255, 255, 0.18);
+      --bg-1: #0f1f2f;
+      --bg-2: #154569;
+      --bg-3: #0b7a75;
+      --text: #f5fbff;
+      --muted: rgba(245, 251, 255, 0.72);
+      --line: rgba(255, 255, 255, 0.16);
+      --panel: rgba(255, 255, 255, 0.1);
+      --panel-strong: rgba(255, 255, 255, 0.14);
       --field: rgba(255, 255, 255, 0.09);
-      --field-focus: rgba(79, 172, 254, 0.35);
-      --ok: #34c759;
-      --error: #ff6b6b;
+      --field-focus: rgba(95, 212, 255, 0.32);
+      --ok: #89f7d9;
+      --error: #ffd2cc;
+      --accent: #5fd4ff;
     }
 
     * {
@@ -28,67 +31,101 @@
 
     body {
       min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      background: linear-gradient(135deg, var(--bg-1), var(--bg-2), var(--bg-3));
+      padding: 18px;
+      background:
+        radial-gradient(circle at top right, rgba(137, 247, 217, 0.18), transparent 30%),
+        linear-gradient(160deg, var(--bg-1), var(--bg-2), var(--bg-3));
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: var(--text);
     }
 
-    .card {
-      width: min(520px, 100%);
-      border-radius: 20px;
-      padding: 28px 24px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 20px 40px rgba(3, 5, 25, 0.35);
-      animation: fadeInUp 0.35s ease-out;
+    .shell {
+      width: min(760px, 100%);
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
 
-    @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(8px);
-      }
+    .hero,
+    .panel {
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 18px 40px rgba(0, 20, 38, 0.22);
+    }
 
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .hero {
+      padding: 22px 18px;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(245, 251, 255, 0.62);
     }
 
     h1 {
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: -0.2px;
+      margin-top: 8px;
+      font-size: 28px;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
     }
 
     .subtitle {
-      margin-top: 8px;
-      font-size: 14px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    .info-box,
-    .warn-box {
-      margin-top: 12px;
-      border-radius: 10px;
-      padding: 10px 12px;
-      font-size: 13px;
-      line-height: 1.45;
-      border: 1px solid var(--line);
-      background: var(--field);
-      color: rgba(255, 255, 255, 0.9);
-    }
-
-    .warn-box {
       margin-top: 10px;
-      border-color: rgba(255, 107, 107, 0.55);
-      background: rgba(255, 107, 107, 0.12);
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .summary-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: var(--panel-strong);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .summary-label {
+      font-size: 12px;
+      color: rgba(245, 251, 255, 0.68);
+    }
+
+    .summary-value {
+      margin-top: 8px;
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.1;
+    }
+
+    .summary-hint {
+      margin-top: 8px;
+      font-size: 12px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .warn-box {
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 210, 204, 0.25);
+      background: rgba(255, 145, 118, 0.14);
+      color: #fff2ef;
+      font-size: 13px;
+      line-height: 1.5;
     }
 
     .warn-box.hidden {
@@ -97,17 +134,18 @@
 
     .warn-box a {
       color: #ffffff;
-      text-decoration: underline;
+      font-weight: 700;
     }
 
-    .divider {
-      height: 1px;
-      margin: 18px 0;
-      background: var(--line);
+    .row + .row {
+      margin-top: 16px;
     }
 
-    .row {
-      margin-bottom: 16px;
+    .field-card {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .label {
@@ -124,21 +162,22 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      padding: 14px;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: var(--field);
+    }
+
+    .toggle-copy {
+      min-width: 0;
     }
 
     .toggle-label {
       display: block;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
-      color: rgba(255, 255, 255, 0.95);
     }
 
     .toggle-hint {
+      margin-top: 6px;
       font-size: 12px;
+      line-height: 1.5;
       color: var(--muted);
     }
 
@@ -146,22 +185,20 @@
     select {
       display: block;
       width: 100%;
-      max-width: 100%;
       min-width: 0;
-      overflow: hidden;
-      border-radius: 12px;
+      border-radius: 14px;
       border: 1px solid var(--line);
       background: var(--field);
       color: var(--text);
-      padding: 12px;
+      padding: 13px 14px;
       font-size: 15px;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s, opacity 0.2s;
     }
 
     input[type="time"] {
-      -webkit-appearance: none;
       appearance: none;
+      -webkit-appearance: none;
     }
 
     input[type="time"]::-webkit-calendar-picker-indicator {
@@ -170,12 +207,12 @@
     }
 
     select {
-      -webkit-appearance: none;
       appearance: none;
-      padding-right: 36px;
+      -webkit-appearance: none;
+      padding-right: 40px;
       background-image:
-        linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.8) 50%),
-        linear-gradient(135deg, rgba(255, 255, 255, 0.8) 50%, transparent 50%);
+        linear-gradient(45deg, transparent 50%, rgba(255, 255, 255, 0.82) 50%),
+        linear-gradient(135deg, rgba(255, 255, 255, 0.82) 50%, transparent 50%);
       background-position:
         calc(100% - 18px) calc(50% - 2px),
         calc(100% - 12px) calc(50% - 2px);
@@ -183,15 +220,16 @@
       background-repeat: no-repeat;
     }
 
-    input:focus {
-      border-color: rgba(79, 172, 254, 0.8);
+    input:focus,
+    select:focus {
+      border-color: rgba(95, 212, 255, 0.7);
       box-shadow: 0 0 0 3px var(--field-focus);
     }
 
     .switch {
       position: relative;
-      width: 52px;
-      height: 30px;
+      width: 56px;
+      height: 32px;
       display: inline-block;
       flex-shrink: 0;
     }
@@ -207,15 +245,15 @@
       inset: 0;
       border-radius: 999px;
       cursor: pointer;
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.24);
       transition: background 0.2s;
     }
 
     .slider:before {
       content: "";
       position: absolute;
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       left: 4px;
       top: 4px;
       border-radius: 50%;
@@ -223,25 +261,25 @@
       transition: transform 0.2s;
     }
 
-    .switch input:checked+.slider {
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
+    .switch input:checked + .slider {
+      background: linear-gradient(135deg, #89f7d9, #5fd4ff);
     }
 
-    .switch input:checked+.slider:before {
-      transform: translateX(22px);
+    .switch input:checked + .slider:before {
+      transform: translateX(24px);
     }
 
     .actions {
-      margin-top: 22px;
       display: flex;
       gap: 10px;
+      margin-top: 14px;
     }
 
     .btn {
       width: 100%;
       border: none;
-      border-radius: 12px;
-      padding: 12px;
+      border-radius: 14px;
+      padding: 12px 14px;
       font-size: 14px;
       font-weight: 700;
       cursor: pointer;
@@ -253,14 +291,14 @@
     }
 
     .btn-primary {
-      color: #fff;
-      background: linear-gradient(135deg, #4facfe, #00f2fe);
+      color: #0f273a;
+      background: linear-gradient(135deg, #89f7d9, #5fd4ff);
     }
 
     .btn-light {
       color: #fff;
-      background: rgba(255, 255, 255, 0.14);
-      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.12);
     }
 
     .status {
@@ -278,63 +316,102 @@
       color: var(--error);
     }
 
-    @media (max-width: 480px) {
-      .card {
-        border-radius: 16px;
-        padding: 20px 16px;
+    @media (max-width: 560px) {
+      body {
+        padding: 14px;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .toggle-wrap {
+        align-items: flex-start;
       }
 
       .actions {
         flex-direction: column;
+      }
+
+      h1 {
+        font-size: 24px;
       }
     }
   </style>
 </head>
 
 <body>
-  <div class="card">
-    <h1>AQI Schedule Settings</h1>
-    <p class="subtitle">เปิดหรือปิดการแจ้งเตือน และเลือกเวลาแจ้งเตือนรายวันของคุณ</p>
-    <p class="warn-box hidden" id="locationWarning">ยังไม่สามารถเปิดการแจ้งเตือนได้ กรุณากดตรวจ AQI อย่างน้อย 1
-      ครั้งเพื่อบันทึกตำแหน่งล่าสุดก่อน <a href="/liff/aqi">ไปหน้าตรวจ AQI</a></p>
-    <div class="divider"></div>
+  <div class="shell">
+    <section class="hero">
+      <div class="eyebrow">Section 3</div>
+      <h1>Set your AQI schedule</h1>
+      <p class="subtitle">Choose whether you want daily notifications, what time they arrive, and which timezone to use.</p>
+    </section>
 
-    <div class="row">
-      <div class="toggle-wrap">
-        <div>
-          <span class="toggle-label">แจ้งเตือนรายวัน</span>
-          <span class="toggle-hint">ค่าเริ่มต้น 07:00 (Asia/Bangkok)</span>
-        </div>
-        <label class="switch" aria-label="Toggle daily notifications">
-          <input id="notifyEnabled" type="checkbox" />
-          <span class="slider"></span>
-        </label>
+    <section class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-label">Daily alert</div>
+        <div class="summary-value" id="summaryEnabled">-</div>
+        <div class="summary-hint">Turn reminders on or off any time.</div>
       </div>
-    </div>
+      <div class="summary-card">
+        <div class="summary-label">Notify time</div>
+        <div class="summary-value" id="summaryTime">07:00</div>
+        <div class="summary-hint">This time is used by your scheduler.</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Timezone</div>
+        <div class="summary-value" id="summaryTimezone">Asia/Bangkok</div>
+        <div class="summary-hint">Useful if you travel or live elsewhere.</div>
+      </div>
+    </section>
 
-    <div class="row">
-      <label class="label" for="notifyTime">เวลาแจ้งเตือน</label>
-      <input id="notifyTime" type="time" step="60" value="07:00" />
-    </div>
+    <section class="panel">
+      <p class="warn-box hidden" id="locationWarning">You need to check AQI once before turning on daily notifications. <a href="/liff/aqi">Open AQI check</a></p>
 
-    <div class="row">
-      <label class="label" for="timezone">เขตเวลา</label>
-      <select id="timezone">
-        <option value="Asia/Bangkok">Asia/Bangkok</option>
-        <option value="Asia/Tokyo">Asia/Tokyo</option>
-        <option value="Asia/Singapore">Asia/Singapore</option>
-        <option value="Asia/Ho_Chi_Minh">Asia/Ho_Chi_Minh</option>
-        <option value="Asia/Jakarta">Asia/Jakarta</option>
-        <option value="UTC">UTC</option>
-      </select>
-    </div>
+      <div class="row">
+        <div class="field-card">
+          <div class="toggle-wrap">
+            <div class="toggle-copy">
+              <span class="toggle-label">Daily AQI notification</span>
+              <p class="toggle-hint">Default time is 07:00 in Asia/Bangkok. If this is off, no scheduled AQI message will be sent.</p>
+            </div>
+            <label class="switch" aria-label="Toggle daily notifications">
+              <input id="notifyEnabled" type="checkbox" />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
 
-    <div class="actions">
-      <button class="btn btn-primary" id="saveBtn">บันทึกการตั้งค่า</button>
-      <button class="btn btn-light" id="closeBtn">ปิด</button>
-    </div>
+      <div class="row">
+        <div class="field-card">
+          <label class="label" for="notifyTime">Notification time</label>
+          <input id="notifyTime" type="time" step="60" value="07:00" />
+        </div>
+      </div>
 
-    <p class="status" id="status">กำลังเริ่มต้น...</p>
+      <div class="row">
+        <div class="field-card">
+          <label class="label" for="timezone">Timezone</label>
+          <select id="timezone">
+            <option value="Asia/Bangkok">Asia/Bangkok</option>
+            <option value="Asia/Tokyo">Asia/Tokyo</option>
+            <option value="Asia/Singapore">Asia/Singapore</option>
+            <option value="Asia/Ho_Chi_Minh">Asia/Ho_Chi_Minh</option>
+            <option value="Asia/Jakarta">Asia/Jakarta</option>
+            <option value="UTC">UTC</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-primary" id="saveBtn">Save settings</button>
+        <button class="btn btn-light" id="closeBtn">Close</button>
+      </div>
+
+      <p class="status" id="status">Initializing...</p>
+    </section>
   </div>
 
   <script>
@@ -348,6 +425,9 @@
     const closeBtn = document.getElementById("closeBtn");
     const statusEl = document.getElementById("status");
     const locationWarningEl = document.getElementById("locationWarning");
+    const summaryEnabledEl = document.getElementById("summaryEnabled");
+    const summaryTimeEl = document.getElementById("summaryTime");
+    const summaryTimezoneEl = document.getElementById("summaryTimezone");
 
     let userId = null;
     let hasLocationSaved = false;
@@ -355,6 +435,12 @@
     function setStatus(msg, type = "") {
       statusEl.textContent = msg;
       statusEl.className = "status" + (type ? " " + type : "");
+    }
+
+    function updateSummary() {
+      summaryEnabledEl.textContent = notifyEnabledEl.checked ? "On" : "Off";
+      summaryTimeEl.textContent = notifyTimeEl.value || "07:00";
+      summaryTimezoneEl.textContent = timezoneEl.value || "Asia/Bangkok";
     }
 
     function setDisabled(disabled) {
@@ -365,7 +451,8 @@
       saveBtn.disabled = formDisabled;
       closeBtn.disabled = false;
       saveBtn.style.opacity = formDisabled ? "0.65" : "1";
-      closeBtn.style.opacity = disabled ? "0.7" : "1";
+      notifyTimeEl.style.opacity = formDisabled ? "0.7" : "1";
+      timezoneEl.style.opacity = formDisabled ? "0.7" : "1";
     }
 
     function setLocationState(hasLocation) {
@@ -374,16 +461,17 @@
     }
 
     async function loadSettings() {
-      setStatus("กำลังโหลดการตั้งค่า...");
+      setStatus("Loading your settings...");
       const response = await fetch(`${API_ORIGIN}/api/users/me/settings?userId=${encodeURIComponent(userId)}`);
       if (!response.ok) {
-        throw new Error(`ไม่สามารถโหลดการตั้งค่าได้ (${response.status})`);
+        throw new Error(`Unable to load settings (${response.status})`);
       }
 
       const data = await response.json();
       notifyEnabledEl.checked = Boolean(data.notifyEnabled);
       notifyTimeEl.value = data.notifyTime || "07:00";
       setLocationState(data.lastLat != null && data.lastLon != null);
+
       const timezone = data.timezone || "Asia/Bangkok";
       if (![...timezoneEl.options].some((opt) => opt.value === timezone)) {
         const option = document.createElement("option");
@@ -393,21 +481,23 @@
       }
       timezoneEl.value = timezone;
 
+      updateSummary();
+
       if (hasLocationSaved) {
-        setStatus("โหลดสำเร็จ คุณสามารถเปลี่ยนค่าได้ตลอด", "ok");
+        setStatus("Settings loaded. You can update them any time.", "ok");
       } else {
-        setStatus("กรุณาตรวจ AQI 1 ครั้ง เพื่อเปิดใช้งานการตั้งค่าแจ้งเตือน");
+        setStatus("Check AQI once first to activate schedule settings.");
       }
     }
 
     async function saveSettings() {
       if (!hasLocationSaved) {
-        setStatus("ยังไม่สามารถตั้งเวลาได้ กรุณาตรวจ AQI ก่อน", "error");
+        setStatus("You need to check AQI first before enabling schedule.", "error");
         return;
       }
 
       setDisabled(true);
-      setStatus("กำลังบันทึกการตั้งค่า...");
+      setStatus("Saving settings...");
 
       const payload = {
         userId,
@@ -425,16 +515,17 @@
 
         if (!response.ok) {
           if (response.status === 400) {
-            throw new Error("รูปแบบเวลา/เขตเวลาไม่ถูกต้อง ตัวอย่าง: Asia/Bangkok");
+            throw new Error("Invalid time or timezone format. Example: Asia/Bangkok");
           }
-          throw new Error(`บันทึกไม่สำเร็จ (${response.status})`);
+          throw new Error(`Save failed (${response.status})`);
         }
 
         const data = await response.json();
         notifyEnabledEl.checked = Boolean(data.notifyEnabled);
         notifyTimeEl.value = data.notifyTime || notifyTimeEl.value;
         timezoneEl.value = data.timezone || timezoneEl.value;
-        setStatus("บันทึกสำเร็จ", "ok");
+        updateSummary();
+        setStatus("Settings saved successfully.", "ok");
       } catch (err) {
         setStatus(err.message, "error");
       } finally {
@@ -444,7 +535,7 @@
 
     async function init() {
       setDisabled(true);
-      setStatus("กำลังเชื่อมต่อ LINE...");
+      setStatus("Connecting to LINE...");
       await liff.init({ liffId: LIFF_ID });
 
       if (!liff.isLoggedIn()) {
@@ -458,6 +549,9 @@
       setDisabled(false);
     }
 
+    notifyEnabledEl.addEventListener("change", updateSummary);
+    notifyTimeEl.addEventListener("input", updateSummary);
+    timezoneEl.addEventListener("change", updateSummary);
     saveBtn.addEventListener("click", saveSettings);
     closeBtn.addEventListener("click", () => {
       if (window.liff && liff.isInClient()) {
@@ -469,7 +563,7 @@
 
     init().catch((err) => {
       console.error(err);
-      setStatus(`เริ่มต้นระบบไม่สำเร็จ: ${err.message}`, "error");
+      setStatus(`Unable to start: ${err.message}`, "error");
       setDisabled(false);
     });
   </script>
