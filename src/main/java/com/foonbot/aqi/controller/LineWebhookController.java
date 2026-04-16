@@ -33,6 +33,8 @@ public class LineWebhookController {
         for (Map<String, Object> event : events) {
             String type = (String) event.get("type");
             String replyToken = (String) event.get("replyToken");
+            Map<String, Object> source = (Map<String, Object>) event.get("source");
+            String userId = source != null ? (String) source.get("userId") : null;
 
             if ("message".equals(type) && event.containsKey("message")) {
                 Map<String, Object> message = (Map<String, Object>) event.get("message");
@@ -52,6 +54,13 @@ public class LineWebhookController {
                             System.err.println("Failed to fetch or reply: " + e.getMessage());
                             e.printStackTrace();
                         }
+                    } else if (isHealthGuidelineCommand(text)) {
+                        try {
+                            airQualityService.replyHealthGuideline(replyToken, userId);
+                        } catch (Exception e) {
+                            System.err.println("Failed to generate health guideline: " + e.getMessage());
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
@@ -59,5 +68,16 @@ public class LineWebhookController {
 
         // LINE requires a 200 OK response to confirm receipt.
         return ResponseEntity.ok().build();
+    }
+
+    private boolean isHealthGuidelineCommand(String text) {
+        if (text == null) {
+            return false;
+        }
+
+        String normalized = text.trim().toLowerCase();
+        return normalized.equals("health guideline")
+                || normalized.equals("health guidelines")
+                || normalized.equals("คำแนะนำสุขภาพ");
     }
 }

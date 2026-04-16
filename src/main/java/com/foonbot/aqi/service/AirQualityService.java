@@ -35,15 +35,18 @@ public class AirQualityService {
 
     private final IQAirService iqAirService;
     private final LineMessagingService lineMessagingService;
+    private final HealthGuidelineService healthGuidelineService;
     private final AirQualityRepository repository;
     private final LineUserRepository lineUserRepository;
 
     public AirQualityService(IQAirService iqAirService,
                              LineMessagingService lineMessagingService,
+                             HealthGuidelineService healthGuidelineService,
                              AirQualityRepository repository,
                              LineUserRepository lineUserRepository) {
         this.iqAirService = iqAirService;
         this.lineMessagingService = lineMessagingService;
+        this.healthGuidelineService = healthGuidelineService;
         this.repository = repository;
         this.lineUserRepository = lineUserRepository;
     }
@@ -196,6 +199,15 @@ public class AirQualityService {
                 .stream()
                 .map(AirQualityDto::new)
                 .collect(Collectors.toList());
+    }
+
+    public void replyHealthGuideline(String replyToken, String userId) {
+        try {
+            String guideline = healthGuidelineService.generateGuidelineText(userId);
+            lineMessagingService.replyText(replyToken, guideline);
+        } catch (IllegalArgumentException ex) {
+            lineMessagingService.replyText(replyToken, ex.getMessage());
+        }
     }
 
     public ScheduledDispatchResult dispatchDueUserNotifications() {
