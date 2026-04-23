@@ -2,18 +2,9 @@ package com.foonbot.aqi.dtos;
 
 public class UpdateUserSettingsRequest {
 
-    private String userId;
     private Boolean notifyEnabled;
     private String notifyTime;
     private String timezone;
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
 
     public Boolean getNotifyEnabled() {
         return notifyEnabled;

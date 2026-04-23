@@ -427,8 +427,15 @@
     const summaryTimeEl = document.getElementById("summaryTime");
     const summaryTimezoneEl = document.getElementById("summaryTimezone");
 
-    let userId = null;
     let hasLocationSaved = false;
+
+    function getAuthHeaders(extraHeaders = {}) {
+      const idToken = liff.getIDToken();
+      if (!idToken) {
+        throw new Error("Unable to verify LINE login. Please reopen this page from LINE.");
+      }
+      return { ...extraHeaders, Authorization: `Bearer ${idToken}` };
+    }
 
     function setStatus(msg, type = "") {
       statusEl.textContent = msg;
@@ -460,7 +467,9 @@
 
     async function loadSettings() {
       setStatus("Loading your settings...");
-      const response = await fetch(`${API_ORIGIN}/api/users/me/settings?userId=${encodeURIComponent(userId)}`);
+      const response = await fetch(`${API_ORIGIN}/api/users/me/settings`, {
+        headers: getAuthHeaders()
+      });
       if (!response.ok) {
         throw new Error(`Unable to load settings (${response.status})`);
       }
@@ -468,7 +477,7 @@
       const data = await response.json();
       notifyEnabledEl.checked = Boolean(data.notifyEnabled);
       notifyTimeEl.value = data.notifyTime || "07:00";
-      setLocationState(data.lastLat != null && data.lastLon != null);
+      setLocationState(Boolean(data.hasLocationSaved));
 
       const timezone = data.timezone || "Asia/Bangkok";
       if (![...timezoneEl.options].some((opt) => opt.value === timezone)) {
@@ -498,7 +507,6 @@
       setStatus("Saving settings...");
 
       const payload = {
-        userId,
         notifyEnabled: notifyEnabledEl.checked,
         notifyTime: notifyTimeEl.value,
         timezone: timezoneEl.value.trim()
@@ -507,7 +515,7 @@
       try {
         const response = await fetch(`${API_ORIGIN}/api/users/me/settings`, {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: getAuthHeaders({ "Content-Type": "application/json" }),
           body: JSON.stringify(payload)
         });
 
@@ -541,8 +549,6 @@
         return;
       }
 
-      const profile = await liff.getProfile();
-      userId = profile.userId;
       await loadSettings();
       setDisabled(false);
     }

@@ -135,10 +135,9 @@ public class AirQualityService {
         return new UserSettingsDto(user);
     }
 
-    public UserSettingsDto updateUserSettings(UpdateUserSettingsRequest request) {
-        String userId = requireUserId(request.getUserId());
-
-        LineUser user = getOrCreateUser(userId);
+    public UserSettingsDto updateUserSettings(String userId, UpdateUserSettingsRequest request) {
+        String safeUserId = requireUserId(userId);
+        LineUser user = getOrCreateUser(safeUserId);
 
         boolean hasLocation = user.getLastLat() != null && user.getLastLon() != null;
         boolean wantsScheduleActive = request.getNotifyEnabled() == null || Boolean.TRUE.equals(request.getNotifyEnabled());

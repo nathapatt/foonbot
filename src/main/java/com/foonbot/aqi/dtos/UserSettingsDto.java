@@ -9,26 +9,18 @@ public class UserSettingsDto {
 
     private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
 
-    private final String userId;
     private final Boolean notifyEnabled;
     private final String notifyTime;
     private final String timezone;
-    private final Double lastLat;
-    private final Double lastLon;
+    private final Boolean hasLocationSaved;
     private final LocalDateTime lastLocationAt;
 
     public UserSettingsDto(LineUser user) {
-        this.userId = user.getLineUserId();
         this.notifyEnabled = user.getNotifyEnabled();
         this.notifyTime = user.getNotifyTime() != null ? user.getNotifyTime().format(TIME_FORMATTER) : null;
         this.timezone = user.getTimezone();
-        this.lastLat = user.getLastLat();
-        this.lastLon = user.getLastLon();
+        this.hasLocationSaved = user.getLastLat() != null && user.getLastLon() != null;
         this.lastLocationAt = user.getLastLocationAt();
-    }
-
-    public String getUserId() {
-        return userId;
     }
 
     public Boolean getNotifyEnabled() {
@@ -43,12 +35,8 @@ public class UserSettingsDto {
         return timezone;
     }
 
-    public Double getLastLat() {
-        return lastLat;
-    }
-
-    public Double getLastLon() {
-        return lastLon;
+    public Boolean getHasLocationSaved() {
+        return hasLocationSaved;
     }
 
     public LocalDateTime getLastLocationAt() {

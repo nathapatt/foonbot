@@ -377,11 +377,17 @@
     const reloadBtn = document.getElementById("reloadBtn");
     const closeBtn = document.getElementById("closeBtn");
 
-    let userId = null;
-
     function setStatus(message, type = "") {
       statusEl.textContent = message;
       statusEl.className = "status" + (type ? " " + type : "");
+    }
+
+    function getAuthHeaders() {
+      const idToken = liff.getIDToken();
+      if (!idToken) {
+        throw new Error("Unable to verify LINE login. Please reopen this page from LINE.");
+      }
+      return { Authorization: `Bearer ${idToken}` };
     }
 
     function toggleHidden(el, hidden) {
@@ -540,7 +546,9 @@
       toggleHidden(historyPanelEl, true);
       toggleHidden(emptyPanelEl, true);
 
-      const response = await fetch(`${API_ORIGIN}/api/air-quality/history/me?userId=${encodeURIComponent(userId)}&limit=${HISTORY_LIMIT}`);
+      const response = await fetch(`${API_ORIGIN}/api/air-quality/history/me?limit=${HISTORY_LIMIT}`, {
+        headers: getAuthHeaders()
+      });
       if (!response.ok) {
         throw new Error(`Unable to load history (${response.status})`);
       }
@@ -573,13 +581,11 @@
         return;
       }
 
-      const profile = await liff.getProfile();
-      userId = profile.userId;
       await fetchHistory();
     }
 
     reloadBtn.addEventListener("click", () => {
-      if (userId) {
+      if (liff.isLoggedIn()) {
         fetchHistory().catch((err) => {
           console.error(err);
           setStatus(err.message, "error");

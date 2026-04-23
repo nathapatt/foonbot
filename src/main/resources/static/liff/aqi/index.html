@@ -126,9 +126,10 @@
 
       if (!liff.isLoggedIn()) { liff.login(); return; }
 
-      setStatus('Getting profile…');
-      const profile = await liff.getProfile();
-      const userId  = profile.userId;
+      const idToken = liff.getIDToken();
+      if (!idToken) {
+        throw new Error('Unable to verify LINE login. Please reopen this page from LINE.');
+      }
 
       setStatus('Getting your location…');
       const position = await new Promise((resolve, reject) => {
@@ -144,8 +145,11 @@
       setStatus('Fetching air quality data…');
       const res = await fetch(`${API_ORIGIN}/api/air-quality/by-location`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId, lat, lon })
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${idToken}`
+        },
+        body: JSON.stringify({ lat, lon })
       });
 
       if (!res.ok) throw new Error('Server error: ' + res.status);

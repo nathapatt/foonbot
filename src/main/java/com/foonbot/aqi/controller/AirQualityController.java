@@ -2,6 +2,7 @@ package com.foonbot.aqi.controller;
 
 import com.foonbot.aqi.dtos.AirQualityDto;
 import com.foonbot.aqi.dtos.ByLocationRequest;
+import com.foonbot.aqi.security.AuthenticatedLineUserId;
 import com.foonbot.aqi.service.AirQualityService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -67,12 +68,11 @@ public class AirQualityController {
 
     /**
      * Get user-specific air quality history (newest first).
-     * GET /api/air-quality/history/me?userId=...&limit=30
+     * GET /api/air-quality/history/me?limit=30
      */
     @GetMapping("/history/me")
-    public ResponseEntity<List<AirQualityDto>> userHistory(
-            @RequestParam String userId,
-            @RequestParam(required = false) Integer limit) {
+    public ResponseEntity<List<AirQualityDto>> userHistory(@AuthenticatedLineUserId String userId,
+                                                           @RequestParam(required = false) Integer limit) {
         List<AirQualityDto> result = airQualityService.getUserHistory(userId, limit);
         return ResponseEntity.ok(result);
     }
@@ -81,12 +81,13 @@ public class AirQualityController {
      * Called by the LIFF page with the user's GPS location.
      * Fetches nearest city AQI and pushes a Flex Message to the LINE user.
      * POST /api/air-quality/by-location
-     * Body: { "userId": "...", "lat": 13.75, "lon": 100.50 }
+     * Body: { "lat": 13.75, "lon": 100.50 }
      */
     @PostMapping("/by-location")
-    public ResponseEntity<AirQualityDto> byLocation(@Valid @RequestBody ByLocationRequest request) {
+    public ResponseEntity<AirQualityDto> byLocation(@AuthenticatedLineUserId String userId,
+                                                    @Valid @RequestBody ByLocationRequest request) {
         AirQualityDto result = airQualityService.fetchAndPushByLocation(
-                request.getUserId(),
+                userId,
                 request.getLat(),
                 request.getLon()
         );

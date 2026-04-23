@@ -31,6 +31,11 @@
       "description": "LINE Messaging API channel access token."
     },
     {
+      "name": "line.messaging.channel-secret",
+      "type": "java.lang.String",
+      "description": "LINE Messaging API channel secret used for webhook signature verification."
+    },
+    {
       "name": "line.messaging.broadcast-url",
       "type": "java.lang.String",
       "description": "LINE Messaging API broadcast endpoint."
@@ -61,6 +66,16 @@
       "description": "Groq model name used for health-guideline generation."
     },
     {
+      "name": "line.login.channel-id",
+      "type": "java.lang.String",
+      "description": "LINE Login channel ID used to verify LIFF ID tokens."
+    },
+    {
+      "name": "line.login.verify-url",
+      "type": "java.lang.String",
+      "description": "LINE endpoint for ID token verification."
+    },
+    {
       "name": "liff.id",
       "type": "java.lang.String",
       "description": "Default LIFF ID."
@@ -79,6 +94,11 @@
       "name": "liff.history-id",
       "type": "java.lang.String",
       "description": "LIFF ID for the history page."
+    },
+    {
+      "name": "app.admin.secret",
+      "type": "java.lang.String",
+      "description": "Shared secret required for manual admin-only AQI trigger endpoints."
     }
   ]
 }

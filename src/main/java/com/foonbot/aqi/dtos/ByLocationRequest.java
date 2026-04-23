@@ -2,13 +2,9 @@ package com.foonbot.aqi.dtos;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public class ByLocationRequest {
-
-    @NotBlank(message = "userId is required")
-    private String userId;
 
     @NotNull(message = "lat is required")
     @DecimalMin(value = "-90.0", message = "lat must be between -90 and 90")
@@ -19,14 +15,6 @@ public class ByLocationRequest {
     @DecimalMin(value = "-180.0", message = "lon must be between -180 and 180")
     @DecimalMax(value = "180.0", message = "lon must be between -180 and 180")
     private Double lon;
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
 
     public Double getLat() {
         return lat;

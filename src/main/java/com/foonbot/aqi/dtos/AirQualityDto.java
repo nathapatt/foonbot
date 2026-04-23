@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 public class AirQualityDto {
 
     private final Long id;
-    private final String userId;
     private final String city;
     private final String state;
     private final String country;
@@ -26,7 +25,6 @@ public class AirQualityDto {
 
     public AirQualityDto(AirQualityRecord record) {
         this.id = record.getId();
-        this.userId = record.getLineUser() != null ? record.getLineUser().getLineUserId() : null;
         this.city = record.getCity();
         this.state = record.getState();
         this.country = record.getCountry();
@@ -69,7 +67,6 @@ public class AirQualityDto {
     // ─── Getters ───────────────────────────────────────────────────────────────
 
     public Long getId() { return id; }
-    public String getUserId() { return userId; }
     public String getCity() { return city; }
     public String getState() { return state; }
     public String getCountry() { return country; }
