@@ -1,14 +1,22 @@
 package com.foonbot.aqi.service;
 
-import com.foonbot.aqi.dtos.AirQualityDto;
-import com.foonbot.aqi.model.AirQualityRecord;
+import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+import com.foonbot.aqi.dtos.AirQualityDto;
+import com.foonbot.aqi.model.AirQualityRecord;
 
 @Service
 public class LineMessagingService {
@@ -227,14 +235,17 @@ public class LineMessagingService {
 
     // ─── AQI Theme Colors ────────────────────────────────────────────────────────
 
-    /** Maps AQI index to a smooth, modern UI color hex. */
+    /**
+     * Maps AQI index to the official U.S. AQI colors.
+     * IQAir states it uses the U.S. EPA AQI standard for AQI color coding.
+     */
     private String resolveAqiHex(Integer aqi) {
         if (aqi == null)  return "#9E9E9E";
-        if (aqi <= 50)    return "#34C759"; // iOS Green (Good)
-        if (aqi <= 100)   return "#FFCC00"; // iOS Yellow (Moderate)
-        if (aqi <= 150)   return "#FF9500"; // iOS Orange (Sensitive)
-        if (aqi <= 200)   return "#FF3B30"; // iOS Red (Unhealthy)
-        if (aqi <= 300)   return "#AF52DE"; // iOS Purple (Very Unhealthy)
-        return "#A12229";                   // Deep Maroon (Hazardous)
+        if (aqi <= 50)    return "#ACD060"; // Good
+        if (aqi <= 100)   return "#F6D55F"; // Moderate
+        if (aqi <= 150)   return "#FC9A54"; // Unhealthy for Sensitive Groups
+        if (aqi <= 200)   return "#F6686C"; // Unhealthy
+        if (aqi <= 300)   return "#A57EBB"; // Very Unhealthy
+        return "#A07785";                   // Hazardous
     }
 }
